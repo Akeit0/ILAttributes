@@ -1,0 +1,14 @@
+﻿{
+  "name": "com.akeit0.il-attributes",
+  "version": "1.0.0",
+  "displayName": "ILAttributes",
+  "description": "A collection of attributes for UnityEngine to write functions which can only be expressed by IL",
+  "unity": "2022.3",
+  "dependencies": {
+    "com.unity.nuget.mono-cecil": "1.11.4"
+  },
+  "author": {
+    "name": "Akeit0",
+    "url": "https://github.com/Akeit0"
+  }
+}

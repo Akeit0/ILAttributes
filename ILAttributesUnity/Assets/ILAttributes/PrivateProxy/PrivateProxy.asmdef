@@ -1,0 +1,16 @@
+{
+    "name": "PrivateProxy",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2a2243ebcaae3b749bee96d37e932562"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
