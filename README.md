@@ -20,6 +20,8 @@ Open `Packages/manifest.json` and add the following in the `dependencies` block:
 ### To use ILAttributes you need to add [ILAttributes.ILProcess] attribute to the class.
 
 ## Private Proxy
+``Allow 'unsafe' Code` is needed to access non public members.``
+
 Unity compatible version of
 https://github.com/Cysharp/PrivateProxy
 But this library supports static classes, generic classes and generic methods.
