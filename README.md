@@ -8,16 +8,39 @@ A collection of attributes for UnityEngine to write functions which can only be 
 3. Enter the following URL:
 
 ```
-https://github.com/Akeit0/ILAttributes.git?path=/Assets/ILAttributes
+https://github.com/Akeit0/ILAttributes.git?path=/ILAttributesUnity/Assets/ILAttributes
 ```
 ### manifest.json
 Open `Packages/manifest.json` and add the following in the `dependencies` block:
 
 ```json
-"com.akeit0.com.akeit0.il-attributes": "https://github.com/Akeit0/ILAttributes.git?path=/Assets/ILAttributes"
+"com.akeit0.com.akeit0.il-attributes": "https://github.com/Akeit0/ILAttributes.git?path=/ILAttributesUnity/Assets/ILAttributes"
 ```
 # Contents
 ### To use ILAttributes you need to add [ILAttributes.ILProcess] attribute to the class.
+
+## Private Proxy
+Unity compatible version of
+https://github.com/Cysharp/PrivateProxy
+But this library supports static classes, generic classes and generic methods.
+Generic methods of generic class is not supported.
+Please see [here](https://github.com/Cysharp/PrivateProxy) first.
+```cs
+using ILAttributs.PrivateProxy;//Name space is different
+public static class SampleStatic//Static class is supported
+{
+    static int _field1;
+    static void GenericFuga<T>() where T:System.IDisposable{}//Generic method is supported with constraints
+}
+public struct SampleGeneric<T>where T:class//Generic class/struct is supported with constraints
+{
+    T _field1;
+}
+[GeneratePrivateProxy(typeof(SampleStatic))]
+public partial struct SampleStaticProxy;
+[GeneratePrivateProxy(typeof(SampleGeneric<>))]
+public ref partial  struct SampleGenericProxy<T>;
+```
 ## ILUnsafeAccessor
 This is almost same as UnsafeAccessor in .NET8 but available in Unity.
 ```cs
@@ -150,4 +173,4 @@ public class UnsafeClass{
 }
 ```
 # LICENCE
-UNLICENCED
+This library is licensed under the [MIT licence](/LICENCE).
