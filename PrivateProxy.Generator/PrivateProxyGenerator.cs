@@ -292,12 +292,12 @@ public partial class PrivateProxyGenerator : IIncrementalGenerator
         var accessibility = proxyType.DeclaredAccessibility.ToCode();
         var structOrClass = proxyType.IsReferenceType ? "class" : "struct";
         var refStruct = proxyType.IsRefLikeType ? "ref " : "";
-
-        //   var hasStatic = members.Any(x => x.IsStatic);
+        var isProxyStatic = proxyType.IsStatic;
+        var proxyStatic = isProxyStatic ? "static " : " ";
 
         code.AppendLine($$"""
     [global::ILAttributes.ILProcess]
-    {{refStruct}}partial {{structOrClass}} {{proxyType.Name}}{{typeGenerics}}{{constraints}}
+    {{refStruct}}{{proxyStatic}}partial {{structOrClass}} {{proxyType.Name}}{{typeGenerics}}{{constraints}}
     {
     """);
         if(!targetType.IsStatic)
