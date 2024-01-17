@@ -12,27 +12,10 @@ namespace ILAttributes.CodeGen
    
     public static class FileUtils
     {
-        public static string GetCallerProjectPath([CallerFilePath]string s=null)
-        {
-            if (s == null) return s;
-            var dirs= s.Split(Path.DirectorySeparatorChar);;
-            var last = dirs.Length -1;
-            while (dirs[last--]!="ILAttributes")
-            {
-            }
-
-            if (dirs[last-1] == "PackageCache")
-            {
-                last -= 3;
-            }
-
-            return string.Join(Path.DirectorySeparatorChar, dirs.Take(last));
-        }
+        
         public static string GetCorePathWrittenPath()
         {
-            var path = GetCallerProjectPath();
-            var writePath = path + Path.DirectorySeparatorChar + "corepath.txt";
-            return writePath;
+            return Path.Combine(Environment.CurrentDirectory, "corepath.txt");
         }
     }
     
@@ -43,29 +26,32 @@ namespace ILAttributes.CodeGen
     {
         static CoreLib()
         {
+           // Debug.Log("CurrentDirectory "+Environment.CurrentDirectory);
+            Location = typeof(int).Module.Assembly.Location;
+            File.WriteAllText(FileUtils.GetCorePathWrittenPath(),Location);
             Location = null;
-            AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
-            CompilationPipeline.compilationStarted += LogCore;
+          //  AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
+           // CompilationPipeline.compilationStarted += LogCore;
         }
 
         public static string Location;
 
-        static void OnDomainUnload(object _, EventArgs __)
-        {
-            AppDomain.CurrentDomain.DomainUnload-= OnDomainUnload;
-            CompilationPipeline.compilationStarted -= LogCore;
-        }
-        static void LogCore(object _)
-        {
-            if(Location!=null)return;
-            Location = typeof(int).Module.Assembly.Location;
-            //Debug.Log(Location);
-            if(string.IsNullOrEmpty(Location))return;
-            var path = FileUtils.GetCallerProjectPath();
-            var writePath = path + Path.DirectorySeparatorChar + "corepath.txt";
-           // Debug.Log(writePath);
-            File.WriteAllText(writePath,Location);
-        }
+        // static void OnDomainUnload(object _, EventArgs __)
+        // {
+        //     AppDomain.CurrentDomain.DomainUnload-= OnDomainUnload;
+        //     CompilationPipeline.compilationStarted -= LogCore;
+        // }
+        // static void LogCore(object _)
+        // {
+        //    // Debug.Log("Current "+Environment.CurrentDirectory);
+        //     if(Location!=null)return;
+        //     Location = typeof(int).Module.Assembly.Location;
+        //     //Debug.Log(Location);
+        //     if(string.IsNullOrEmpty(Location))return;
+        //     var path = FileUtils.GetCorePathWrittenPath();
+        //    // Debug.Log(writePath);
+        //     File.WriteAllText(path,Location);
+        // }
     }
     
 }

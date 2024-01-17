@@ -51,43 +51,6 @@ namespace ILAttributes.CodeGen
             return new FieldReference(definition.Name, definition.FieldType, declaringType);
         }
 
-        //  static FieldReference CreateFieldReference(TypeReference declaringTypeBase, TypeReference fieldType,
-        //     string name)
-        // {
-        //     var declaringType = new GenericInstanceType(declaringTypeBase);
-        //     foreach (var parameter in declaringTypeBase.DeclaringType.GenericParameters)
-        //     {
-        //         declaringType.GenericArguments.Add(parameter);
-        //     }
-        //
-        //     return new FieldReference(name, fieldType, declaringType);
-        // }
-        //
-        //  static MethodReference CreateMethodReference(MethodDefinition definition)
-        // {
-        //     var declaringType = new GenericInstanceType(definition.DeclaringType);
-        //     foreach (var parameter in definition.DeclaringType.GenericParameters)
-        //     {
-        //         declaringType.GenericArguments.Add(parameter);
-        //     }
-        //
-        //     return new MethodReference(definition.Name, definition.ReturnType, declaringType)
-        //         { HasThis = definition.HasThis, ExplicitThis = definition.ExplicitThis };
-        // }
-        //
-        // static PropertyDefinition GetProperty(TypeDefinition typeDefinition, string name)
-        // {
-        //     foreach (var property in typeDefinition.Properties)
-        //     {
-        //         if (property.Name == name)
-        //         {
-        //             return property;
-        //         }
-        //     }
-        //
-        //     return null;
-        // }
-
 
         public override ILPostProcessResult Process(ICompiledAssembly compiledAssembly)
         {
@@ -106,83 +69,82 @@ namespace ILAttributes.CodeGen
                 });
             }
 
-            //AddMessage(compiledAssembly.Name);
-           
+
             using var assemblyDefinition =
                 ILPostProcessUtility.AssemblyDefinitionFor(compiledAssembly);
             var mainModule = assemblyDefinition.MainModule;
             var voidType = mainModule.ImportReference(typeof(void));
-             if (compiledAssembly.Name == "ILAttributes")
-                    { foreach (var typeDefinition in mainModule.Types)
+            if (compiledAssembly.Name == "ILAttributes")
+            {
+                foreach (var typeDefinition in mainModule.Types)
+                {
+                    if (typeDefinition.IsValueType && typeDefinition.CustomAttributes.Any(x =>
+                            x.Constructor.DeclaringType.Name == "ILRefGenAttribute"))
+                    {
+                        if (ILPostProcessUtility.Core == null)
                         {
-                            if (typeDefinition.IsValueType && typeDefinition.CustomAttributes.Any(x =>
-                                    x.Constructor.DeclaringType.Name == "ILRefGenAttribute"))
+                            AddMessage("CoreLib is null");
+                        }
+                        else
+                        {
+                            var def = ILPostProcessUtility.Core.GetType("System", "ByReference`1");
+                            if (def != null)
                             {
-                                if (ILPostProcessUtility.Core == null)
-                                {
-                                    AddMessage("CoreLib is null");
-                                }
-                                else
-                                {
-                                    var def = ILPostProcessUtility.Core.GetType("System", "ByReference`1");
-                                    if (def != null)
+                                var b = mainModule.ImportReference(def);
+                                var genericInstanceType = new GenericInstanceType(b);
+                                var ctorDef =
+                                    def.Methods.First(x => x.IsConstructor); //new ByRef<T>(ref T value)
+                                var byReferenceCtor =
+                                    new MethodReference(".ctor", voidType, genericInstanceType)
                                     {
-                                        var b = mainModule.ImportReference(def);
-                                        var genericInstanceType = new GenericInstanceType(b);
-                                        var ctorDef =
-                                            def.Methods.First(x => x.IsConstructor); //new ByRef<T>(ref T value)
-                                        var byReferenceCtor =
-                                            new MethodReference(".ctor", voidType, genericInstanceType)
-                                            {
-                                                CallingConvention = ctorDef.CallingConvention,
-                                                HasThis = ctorDef.HasThis,
-                                                ExplicitThis = ctorDef.ExplicitThis,
-                                            };
-                                        genericInstanceType.GenericArguments.Add(typeDefinition.GenericParameters[0]);
-                                        var fieldDef = new FieldDefinition("_ref", FieldAttributes.Private,
-                                            genericInstanceType);
-                                        typeDefinition.Fields.Add(fieldDef);
-                                        var field = CreateFieldReference(fieldDef);
-                                        var ctor = typeDefinition.Methods.First(x => x.IsConstructor);
-                                        byReferenceCtor.Parameters.Add(
-                                            new ParameterDefinition(ctor.Parameters[0].ParameterType));
-                                        var processor = ctor.Body.GetILProcessor();
-                                        processor.Emit(OpCodes.Ldarg_0);
-                                        processor.Emit(OpCodes.Ldarg_1);
-                                        processor.Emit(OpCodes.Newobj, byReferenceCtor);
-                                        processor.Emit(OpCodes.Stfld, field);
-                                        processor.Emit(OpCodes.Ret);
-                                        var getDef = def.Methods.First(x => x.Name == "get_Value");
+                                        CallingConvention = ctorDef.CallingConvention,
+                                        HasThis = ctorDef.HasThis,
+                                        ExplicitThis = ctorDef.ExplicitThis,
+                                    };
+                                genericInstanceType.GenericArguments.Add(typeDefinition.GenericParameters[0]);
+                                var fieldDef = new FieldDefinition("_ref", FieldAttributes.Private,
+                                    genericInstanceType);
+                                typeDefinition.Fields.Add(fieldDef);
+                                var field = CreateFieldReference(fieldDef);
+                                var ctor = typeDefinition.Methods.First(x => x.IsConstructor);
+                                byReferenceCtor.Parameters.Add(
+                                    new ParameterDefinition(ctor.Parameters[0].ParameterType));
+                                var processor = ctor.Body.GetILProcessor();
+                                processor.Emit(OpCodes.Ldarg_0);
+                                processor.Emit(OpCodes.Ldarg_1);
+                                processor.Emit(OpCodes.Newobj, byReferenceCtor);
+                                processor.Emit(OpCodes.Stfld, field);
+                                processor.Emit(OpCodes.Ret);
+                                var getDef = def.Methods.First(x => x.Name == "get_Value");
 
-                                        var getRef =
-                                            typeDefinition.Properties.First(x => x.Name == "Value")
-                                                .GetMethod; //First(x => x.Name == "Value")
-                                        var byReferenceGetValue =
-                                            new MethodReference("get_Value", getRef.ReturnType, genericInstanceType)
-                                            {
-                                                CallingConvention = getDef.CallingConvention,
-                                                HasThis = getDef.HasThis,
-                                                ExplicitThis = getDef.ExplicitThis,
-                                            };
-                                        processor = getRef.Body.GetILProcessor();
-                                        processor.Clear();
-                                        processor.Emit(OpCodes.Ldarg_0);
-                                        processor.Emit(OpCodes.Ldflda, field);
-                                        processor.Emit(OpCodes.Call, byReferenceGetValue);
-                                        processor.Emit(OpCodes.Ret);
-                                        // AddMessage(def);
-                                    }
-                                }
+                                var getRef =
+                                    typeDefinition.Properties.First(x => x.Name == "Value")
+                                        .GetMethod; //First(x => x.Name == "Value")
+                                var byReferenceGetValue =
+                                    new MethodReference("get_Value", getRef.ReturnType, genericInstanceType)
+                                    {
+                                        CallingConvention = getDef.CallingConvention,
+                                        HasThis = getDef.HasThis,
+                                        ExplicitThis = getDef.ExplicitThis,
+                                    };
+                                processor = getRef.Body.GetILProcessor();
+                                processor.Clear();
+                                processor.Emit(OpCodes.Ldarg_0);
+                                processor.Emit(OpCodes.Ldflda, field);
+                                processor.Emit(OpCodes.Call, byReferenceGetValue);
+                                processor.Emit(OpCodes.Ret);
+                                // AddMessage(def);
                             }
                         }
                     }
+                }
+            }
+
             foreach (var typeDefinition in mainModule.Types)
             {
                 if (typeDefinition.HasCustomAttributes &&
                     typeDefinition.CustomAttributes.Any(x => x.Constructor.DeclaringType.Name == "ILProcessAttribute"))
                 {
-                    
-
                     foreach (var methodDefinition in typeDefinition.Methods)
                     {
                         var hasViewAttribute = false;
@@ -194,7 +156,7 @@ namespace ILAttributes.CodeGen
                                 if (name == "ILViewAttribute")
                                 {
                                     hasViewAttribute = true;
-                                    
+
                                     break;
                                 }
 
@@ -315,7 +277,6 @@ namespace ILAttributes.CodeGen
                                                 var converter =
                                                     new GenericTypeConverter(declaringType, methodDefinition);
                                                 fieldType = converter.Convert(fieldType);
-                                                
                                             }
 
                                             FieldReference fieldReference = new FieldReference(accessName,
@@ -359,7 +320,8 @@ namespace ILAttributes.CodeGen
                                             }
 
                                             var genericParameters = methodDefinition.GenericParameters;
-                                            if (0<genericParameters.Count&&converter.GenericParameterCount != genericParameters.Count)
+                                            if (0 < genericParameters.Count && converter.GenericParameterCount !=
+                                                genericParameters.Count)
                                             {
                                                 if (converter.GenericParameterCount != 0)
                                                     throw new NotSupportedException(
