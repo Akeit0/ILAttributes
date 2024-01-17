@@ -299,6 +299,9 @@ public partial class PrivateProxyGenerator : IIncrementalGenerator
     [global::ILAttributes.ILProcess]
     {{refStruct}}partial {{structOrClass}} {{proxyType.Name}}{{typeGenerics}}{{constraints}}
     {
+    """);
+        if(!targetType.IsStatic)
+        code.AppendLine($$"""
     {{If(proxyType.IsRefLikeType, $$"""
         global::ILAttributes.ByReference<{{targetTypeFullName}}> target__;
         public {{proxyType.Name}}({{refStruct}}{{targetTypeFullName}} target)
