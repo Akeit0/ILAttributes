@@ -16,9 +16,14 @@ namespace ILAttributes.CodeGen
         {
             if (s == null) return s;
             var dirs= s.Split(Path.DirectorySeparatorChar);;
-            var last = dirs.Length ;
-            while (dirs[--last]!="Assets")
+            var last = dirs.Length -1;
+            while (dirs[last--]!="ILAttributes")
             {
+            }
+
+            if (dirs[last-1] == "PackageCache")
+            {
+                last -= 3;
             }
 
             return string.Join(Path.DirectorySeparatorChar, dirs.Take(last));
