@@ -37,9 +37,9 @@ public struct SampleGeneric<T>where T:class//Generic class/struct is supported w
     T _field1;
 }
 [GeneratePrivateProxy(typeof(SampleStatic))]
-public partial struct SampleStaticProxy;
+public partial struct SampleStaticProxy{};
 [GeneratePrivateProxy(typeof(SampleGeneric<>))]
-public ref partial  struct SampleGenericProxy<T>;
+public ref partial  struct SampleGenericProxy<T>{};
 ```
 ## ILUnsafeAccessor
 This is almost same as UnsafeAccessor in .NET8 but available in Unity.
