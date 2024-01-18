@@ -259,14 +259,6 @@ public partial class PrivateProxyGenerator : IIncrementalGenerator
                 typeSyntax.Identifier.GetLocation(), targetType.GetType().ToString()));
                 hasError = true;
             }
-          /*  else
-            {
-                var constraints= GetConstraintsString(targetType.TypeParameters);
-        ;
-                context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.InValidConstraints,
-             typeSyntax.Identifier.GetLocation(), constraints));
-
-            }*/
         }
         
         return !hasError;

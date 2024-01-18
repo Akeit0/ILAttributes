@@ -56,16 +56,7 @@ internal static class EmitHelper
         }
     }
 
-    public static string[] GetGenericArguments(string typeName)
-    {
-        var split=typeName.Split(',');
-        if (split.Length == 1) return Array.Empty<string>();
-
-        split[0] = split[0].Split('<')[1];
-        var last = split[split.Length - 1];
-        split[split.Length - 1] = last.Substring(last.Length-1);
-        return split;
-    }
+  
     public static string GetConstraintsString(ImmutableArray<ITypeParameterSymbol> typeParameters)
     {
         var stringBuilder = new StringBuilder();
