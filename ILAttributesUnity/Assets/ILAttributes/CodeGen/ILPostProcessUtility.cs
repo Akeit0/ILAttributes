@@ -18,7 +18,7 @@ namespace ILAttributes.CodeGen
             return elementType.IsGenericInstance||elementType.IsGenericParameter;
             
         }
-        private static string corPath=File.ReadAllText(FileUtils.GetCorePathWrittenPath()) ;
+        private static string corPath=File.Exists(FileUtils.GetCorePathWrittenPath())?File.ReadAllText(FileUtils.GetCorePathWrittenPath()):"" ;
 
         public static ModuleDefinition Core;
         internal static AssemblyDefinition AssemblyDefinitionFor(ICompiledAssembly compiledAssembly)
