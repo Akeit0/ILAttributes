@@ -4,6 +4,7 @@ A collection of attributes for UnityEngine to write functions which can only be 
 ## How to install
 
 ***First put 'corepath.txt' file in the project folder and write its runtime mscorlib.dll path in it***
+***(e.g.C:\Program Files\Unity\Hub\Editor\2022.3.17f1\Editor\Data\MonoBleedingEdge\lib\mono\unityjit-win32\mscorlib.dll)***
 ### Package Manager
 1. Open the Package Manager by going to Window > Package Manager.
 2. Click on the "+" button and select "Add package from git URL".
