@@ -83,37 +83,37 @@ public partial class PrivateProxyGenerator : IIncrementalGenerator
             kind = (PrivateProxyGenerateKinds)attr.ConstructorArguments[1].Value!;
         }
     }
-    static bool CanExpose(ITypeSymbol typeSymbol)
+static bool CanExpose(ITypeSymbol typeSymbol)
+{
+    if (typeSymbol is IPointerTypeSymbol) return false;
+    while (typeSymbol is IArrayTypeSymbol arrayType)
     {
+        typeSymbol = arrayType.ElementType;
         if (typeSymbol is IPointerTypeSymbol) return false;
-        if (typeSymbol is IArrayTypeSymbol arrayType)
-        {
-            typeSymbol = arrayType.ElementType;
-            if (typeSymbol is IPointerTypeSymbol) return false;
-        }
-        if(typeSymbol is INamedTypeSymbol namedTypeSymbol)
-        {
-            if (namedTypeSymbol.IsGenericType)
-            {
-                foreach (var e in namedTypeSymbol.TypeArguments)
-                {
-
-                    if (!CanExpose(e)) return false;
-                }
-            }
-           
-        }
-        var declaredAccessibility = typeSymbol.DeclaredAccessibility;
-        switch (declaredAccessibility)
-        {
-            case Accessibility.Public:
-                return true;
-            case Accessibility.NotApplicable:
-                return true;
-            default:
-                return false;
-        }
     }
+    if(typeSymbol is INamedTypeSymbol namedTypeSymbol)
+    {
+        if (namedTypeSymbol.IsGenericType)
+        {
+            foreach (var e in namedTypeSymbol.TypeArguments)
+            {
+
+                if (!CanExpose(e)) return false;
+            }
+        }
+           
+    }
+    var declaredAccessibility = typeSymbol.DeclaredAccessibility;
+    switch (declaredAccessibility)
+    {
+        case Accessibility.Public:
+            return true;
+        case Accessibility.NotApplicable:
+            return true;
+        default:
+            return false;
+    }
+}
     static MetaMember[] GetMembers(INamedTypeSymbol targetType, PrivateProxyGenerateKinds kind)
     {
         var members = targetType.IsGenericType? targetType.OriginalDefinition.GetMembers(): targetType.GetMembers();
