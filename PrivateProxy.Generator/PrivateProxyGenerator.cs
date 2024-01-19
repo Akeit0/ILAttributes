@@ -85,6 +85,24 @@ public partial class PrivateProxyGenerator : IIncrementalGenerator
     }
     static bool CanExpose(ITypeSymbol typeSymbol)
     {
+        if (typeSymbol is IPointerTypeSymbol) return false;
+        if (typeSymbol is IArrayTypeSymbol arrayType)
+        {
+            typeSymbol = arrayType.ElementType;
+            if (typeSymbol is IPointerTypeSymbol) return false;
+        }
+        if(typeSymbol is INamedTypeSymbol namedTypeSymbol)
+        {
+            if (namedTypeSymbol.IsGenericType)
+            {
+                foreach (var e in namedTypeSymbol.TypeArguments)
+                {
+
+                    if (!CanExpose(e)) return false;
+                }
+            }
+           
+        }
         var declaredAccessibility = typeSymbol.DeclaredAccessibility;
         switch (declaredAccessibility)
         {
@@ -174,7 +192,7 @@ public partial class PrivateProxyGenerator : IIncrementalGenerator
                 if (!CanExpose(m.ReturnType)) continue;
                 foreach (var parameter in m.Parameters)
                 {
-                    if (!CanExpose(parameter.Type)) continue;
+                    if (!CanExpose(parameter.Type)) goto Next;
                 }
 
                 if (m.DeclaredAccessibility == Accessibility.Public) continue;
@@ -183,8 +201,9 @@ public partial class PrivateProxyGenerator : IIncrementalGenerator
                 {
                     list.Add(new(m, genericParams,constraints));
                 }
-              
+                Next:;
             }
+       
         }
 
         return list.ToArray();
