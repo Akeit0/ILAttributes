@@ -405,7 +405,7 @@ $$"""
         [UnsafeAccessor(UnsafeAccessorKind.Method, "{{item.Name}}")]
         static extern {{refReturn}}{{item.MemberTypeFullName}} __{{item.Name}}__{{generics}}({{refStruct}}{{targetTypeFullName}} target{{parametersWithComma}});
                                                                
-        public {{refReturn}}{{readonlyCode}}{{item.MemberTypeFullName}} {{item.Name}}{{generics}}({{parameters}}){{item.ConstraintsString}} => {{refReturn}}__{{item.Name}}__({{targetInstance}}{{useParameters}});
+        public {{refReturn}}{{readonlyCode}}{{item.MemberTypeFullName}} {{item.Name}}{{generics}}({{parameters}}){{item.ConstraintsString}} => {{refReturn}}__{{item.Name}}__{{generics}}({{targetInstance}}{{useParameters}});
 
 """));
                     break;
