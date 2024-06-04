@@ -17,7 +17,7 @@ https://github.com/Akeit0/ILAttributes.git?path=/ILAttributesUnity/Assets/ILAttr
 Open `Packages/manifest.json` and add the following in the `dependencies` block:
 
 ```json
-"com.akeit0.com.akeit0.il-attributes": "https://github.com/Akeit0/ILAttributes.git?path=/ILAttributesUnity/Assets/ILAttributes"
+"com.akeit0.il-attributes": "https://github.com/Akeit0/ILAttributes.git?path=/ILAttributesUnity/Assets/ILAttributes"
 ```
 # Contents
 ### To use ILAttributes you need to add [ILAttributes.ILProcess] attribute to the class.
