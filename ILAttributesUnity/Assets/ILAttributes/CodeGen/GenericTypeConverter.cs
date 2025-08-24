@@ -11,10 +11,11 @@ namespace ILAttributes.CodeGen
         //  TypeDefinition typeDefinition;
         // Collection<GenericParameter> genericParametersOfType;
         Collection<GenericParameter> genericParametersOfTypeDef;
+		public Collection<GenericParameter> GenericParametersOfMethod;
 
         //  Collection<GenericParameter> genericParametersOfMethod;
-        //  Collection<GenericParameter> genericParametersOfMethodDeclaringType;
-        public bool IsGenericInstance => genericParametersOfTypeDef != null;
+		//  Collection<GenericParameter> genericParametersOfMethodDeclaringType;
+		public bool IsGenericInstance => genericParametersOfTypeDef != null;
 
         public int GenericParameterCount => genericParametersOfTypeDef?.Count ?? 0;
 
@@ -139,16 +140,27 @@ namespace ILAttributes.CodeGen
             if (typeReference.IsGenericParameter)
             {
                 var genericParameter = (GenericParameter)typeReference;
-                foreach (var defGenericParameter in genericParametersOfTypeDef)
+                foreach ( var defGenericParameter in genericParametersOfTypeDef )
                 {
                     if (defGenericParameter.Name == genericParameter.Name)
                         return defGenericParameter;
                 }
 
-                throw new NotSupportedException("GenericParameter of GenericClass is not supported" +
-                                                genericParameter.Name);
-                //return typeReference;
-            }
+				//
+				if (GenericParametersOfMethod is null)
+					throw new NotSupportedException("GenericParameter of GenericClass is not supported");
+
+				var gpPos = genericParameter.Position - genericParametersOfTypeDef.Count;
+				if ( gpPos >= GenericParametersOfMethod.Count )
+					throw new NotSupportedException($"GenericParameter position is out of range: {genericParameter.Position} for {genericParameter.Name} out of / {GenericParametersOfMethod.Count} params." );
+
+				if ( gpPos < 0 )
+					throw new NotSupportedException( $"GenericParameter position is negative: {genericParameter.Position} for {genericParameter.Name} out of / {GenericParametersOfMethod.Count} params." );
+				
+				return GenericParametersOfMethod[gpPos] ??
+				       throw new NotSupportedException( "GenericParametersOfMethod gpPos offset is incorrect / not supported for type arg: " +
+						genericParameter.Name );
+			}
 
             if (typeReference.IsGenericInstance)
             {

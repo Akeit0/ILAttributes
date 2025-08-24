@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -187,10 +188,10 @@ namespace ILAttributes.CodeGen
                                             {
                                                 genericInstanceType.GenericArguments.Add(genericParameter);
                                             }
-
+                                        
                                             declaringType = genericInstanceType;
                                         }
-                                    }
+									}
 
                                     var parameters = methodDefinition.Parameters;
                                     bool declaringTypeOnAttribute = declaringType != null;
@@ -235,43 +236,43 @@ namespace ILAttributes.CodeGen
                                         {
                                             var converter = new GenericTypeConverter(declaringType, methodDefinition);
                                             var returnType = converter.Convert(methodDefinition.ReturnType);
-                                            var method = new MethodReference(accessName, returnType,
-                                                declaringType)
+											var method = new MethodReference(accessName, returnType, declaringType)
                                             {
                                                 HasThis = true
                                             };
-                                            if (!converter.IsGenericInstance)
-                                            {
-                                                var genericParameters = methodDefinition.GenericParameters;
-                                                var genericMethod = new GenericInstanceMethod(method);
-                                                foreach (var genericParameter in genericParameters)
-                                                {
-                                                    method.GenericParameters.Add(
-                                                        new GenericParameter(genericParameter.Name, method));
-                                                    genericMethod.GenericArguments.Add(genericParameter);
-                                                }
 
-                                                method = genericMethod;
-                                            }
+											if ( methodDefinition.GenericParameters.Count > converter.GenericParameterCount )
+											{
+												var genericParameters = methodDefinition.GenericParameters;
+												var genericMethod = new GenericInstanceMethod( method );
+												for ( var i = converter.GenericParameterCount; i < genericParameters.Count; i++ )
+												{
+													var genericParameter = genericParameters[i];
+													method.GenericParameters.Add( new GenericParameter( genericParameter.Name, method ) );
+													genericMethod.GenericArguments.Add( genericParameter );
+												}
 
-                                            processor.Emit(OpCodes.Ldarg_0);
-                                            for (int i = 1; i < parameters.Count; i++)
-                                            {
-                                                method.Parameters.Add(
-                                                    new ParameterDefinition(
-                                                        converter.Convert(parameters[i].ParameterType)));
-                                                processor.Emit(OpCodes.Ldarg, i);
-                                            }
+												converter.GenericParametersOfMethod = method.GenericParameters;
+												method = genericMethod;
+												// method = methodDefinition.Module.ImportReference( genericMethod );
+											}
 
-                                            processor.Emit(OpCodes.Call, method);
+											processor.Emit(OpCodes.Ldarg_0);
+											for ( var i = 1; i < parameters.Count; i++ )
+											{
+												var paramType = converter.Convert( parameters[i].ParameterType );
+												method.Parameters.Add( new ParameterDefinition( paramType ) );
+												processor.Emit( OpCodes.Ldarg, i );
+											}
 
+											method = methodDefinition.Module.ImportReference( method );
+											processor.Emit( OpCodes.Call, method );
                                             break;
                                         }
 
                                         case ILUnsafeAccessorKind.Field:
                                         {
                                             var fieldType = ((ByReferenceType)methodDefinition.ReturnType).ElementType;
-
                                             if (fieldType.ContainsGenerics())
                                             {
                                                 var converter =
@@ -279,10 +280,10 @@ namespace ILAttributes.CodeGen
                                                 fieldType = converter.Convert(fieldType);
                                             }
 
-                                            FieldReference fieldReference = new FieldReference(accessName,
-                                                fieldType,
-                                                declaringType);
-
+											FieldReference fieldReference = new FieldReference( accessName,
+												fieldType,
+												declaringType );
+											
                                             processor.Emit(OpCodes.Ldarg_0);
                                             processor.Emit(OpCodes.Ldflda, fieldReference);
                                             break;
@@ -774,3 +775,4 @@ StackTrace: {e.StackTrace}",
         }
     }
 }
+#nullable restore
